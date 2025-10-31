@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Auto-Poster</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 50%, #e0e7ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(to right, #2563eb, #4f46e5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
+        }
+        
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .status-running {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-stopped {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-full {
+            width: 100%;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #f9fafb;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+        
+        .history-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        
+        .history-item:hover {
+            background: #f9fafb;
+        }
+        
+        .history-content {
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+        
+        .history-meta {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .badge-success {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-error {
+            background: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .file-info {
+            background: #dbeafe;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            color: #1e40af;
+        }
+        
+        .status-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .toast-error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .help-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Facebook Auto-Poster</h1>
+        <p class="subtitle">Automate your Facebook posts with ease</p>
+        
+        <!-- Status Card -->
+        <div class="card">
+            <div class="card-header">📊 Posting Status</div>
+            <div class="status-controls">
+                <div>
+                    <span id="statusBadge" class="status-badge status-stopped">⚫ Stopped</span>
+                    <span id="lineInfo" style="margin-left: 16px; color: #6b7280;">Line: 0 / 0</span>
+                </div>
+                <div>
+                    <button id="startBtn" class="btn btn-success" onclick="startPosting()">
+                        ▶️ Start Posting
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger" onclick="stopPosting()" disabled>
+                        ⏹️ Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Configuration Card -->
+            <div class="card">
+                <div class="card-header">⚙️ Configuration</div>
+                <form id="configForm" onsubmit="saveConfig(event)">
+                    <div class="form-group">
+                        <label for="fb_token">Facebook Access Token *</label>
+                        <input type="text" id="fb_token" required placeholder="Enter your Facebook token">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="page_id">Page ID (Optional)</label>
+                        <input type="text" id="page_id" placeholder="Leave empty for personal profile">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="delay_minutes">⏱️ Delay Between Posts (minutes) *</label>
+                        <input type="number" id="delay_minutes" min="1" value="5" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mention_uid">👤 UID to Mention (Optional)</label>
+                        <input type="text" id="mention_uid" placeholder="Enter user ID to tag">
+                        <div class="help-text">System will auto-fetch name from Facebook</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prefix_text">Prefix Text (Optional)</label>
+                        <input type="text" id="prefix_text" placeholder="Text to add before each post">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Save Configuration</button>
+                </form>
+            </div>
+            
+            <!-- File Upload Card -->
+            <div class="card">
+                <div class="card-header">📤 Upload Post File</div>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <p style="color: #6b7280; margin-bottom: 8px;">Click to upload .txt file</p>
+                    <p id="fileName" style="color: #3b82f6; font-weight: 600; font-size: 0.875rem;"></p>
+                </div>
+                <input type="file" id="fileInput" accept=".txt" onchange="uploadFile()" style="display: none;">
+                
+                <div id="fileInfo" class="file-info hidden">
+                    <strong>✓ File loaded:</strong> <span id="totalLines">0</span> lines ready to post
+                </div>
+            </div>
+        </div>
+        
+        <!-- Post History -->
+        <div class="card">
+            <div class="card-header">📜 Recent Posts</div>
+            <div id="historyContainer" style="max-height: 400px; overflow-y: auto;">
+                <p style="text-align: center; color: #6b7280; padding: 32px;">No posts yet</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = window.location.origin + '/api';
+        let pollInterval;
+        
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Fetch status
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                const data = await response.json();
+                
+                const badge = document.getElementById('statusBadge');
+                const startBtn = document.getElementById('startBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                
+                if (data.is_running) {
+                    badge.className = 'status-badge status-running';
+                    badge.textContent = '🟢 Running';
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                } else {
+                    badge.className = 'status-badge status-stopped';
+                    badge.textContent = '⚫ Stopped';
+                    startBtn.disabled = data.total_lines === 0;
+                    stopBtn.disabled = true;
+                }
+                
+                document.getElementById('lineInfo').textContent = `Line: ${data.current_line} / ${data.total_lines}`;
+            } catch (error) {
+                console.error('Error fetching status:', error);
+            }
+        }
+        
+        // Fetch config
+        async function fetchConfig() {
+            try {
+                const response = await fetch(`${API_URL}/config`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    document.getElementById('fb_token').value = data.config.fb_token || '';
+                    document.getElementById('page_id').value = data.config.page_id || '';
+                    document.getElementById('delay_minutes').value = data.config.delay_minutes || 5;
+                    document.getElementById('mention_uid').value = data.config.mention_uid || '';
+                    document.getElementById('prefix_text').value = data.config.prefix_text || '';
+                }
+            } catch (error) {
+                console.error('Error fetching config:', error);
+            }
+        }
+        
+        // Fetch history
+        async function fetchHistory() {
+            try {
+                const response = await fetch(`${API_URL}/history`);
+                const data = await response.json();
+                
+                const container = document.getElementById('historyContainer');
+                
+                if (data.history.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 32px;">No posts yet</p>';
+                } else {
+                    container.innerHTML = data.history.map(post => `
+                        <div class="history-item">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div class="history-content">${post.content}</div>
+                                    <div class="history-meta">
+                                        Line ${post.line_number} • ${new Date(post.posted_at).toLocaleString()}
+                                    </div>
+                                    ${post.error_message ? `<div style="color: #ef4444; font-size: 0.75rem; margin-top: 4px;">${post.error_message}</div>` : ''}
+                                </div>
+                                <span class="badge-${post.status === 'success' ? 'success' : 'error'}">${post.status}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error fetching history:', error);
+            }
+        }
+        
+        // Save config
+        async function saveConfig(event) {
+            event.preventDefault();
+            
+            const config = {
+                fb_token: document.getElementById('fb_token').value,
+                page_id: document.getElementById('page_id').value,
+                delay_minutes: parseInt(document.getElementById('delay_minutes').value),
+                mention_uid: document.getElementById('mention_uid').value,
+                prefix_text: document.getElementById('prefix_text').value
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/config`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+                
+                if (response.ok) {
+                    showToast('Configuration saved successfully!', 'success');
+                    fetchConfig();
+                } else {
+                    showToast('Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                showToast('Error saving configuration', 'error');
+            }
+        }
+        
+        // Upload file
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            if (!file.name.endsWith('.txt')) {
+                showToast('Please upload a .txt file only', 'error');
+                return;
+            }
+            
+            document.getElementById('fileName').textContent = file.name;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`${API_URL}/upload-file`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    document.getElementById('fileInfo').classList.remove('hidden');
+                    document.getElementById('totalLines').textContent = data.total_lines;
+                    fetchStatus();
+                } else {
+                    showToast(data.detail || 'Failed to upload file', 'error');
+                }
+            } catch (error) {
+                showToast('Error uploading file', 'error');
+            }
+        }
+        
+        // Start posting
+        async function startPosting() {
+            try {
+                const response = await fetch(`${API_URL}/start-posting`, {method: 'POST'});
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    fetchStatus();
+                } else {
+                    showToast(data.detail || 'Failed to start posting', 'error');
+                }
+            } catch (error) {
+                showToast('Error starting posting', 'error');
+            }
+        }
+        
+        // Stop posting
+        async function stopPosting() {
+            try {
+                const response = await fetch(`${API_URL}/stop-posting`, {method: 'POST'});
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    fetchStatus();
+                } else {
+                    showToast('Failed to stop posting', 'error');
+                }
+            } catch (error) {
+                showToast('Error stopping posting', 'error');
+            }
+        }
+        
+        // Initialize
+        fetchConfig();
+        fetchStatus();
+        fetchHistory();
+        
+        // Poll status and history every 5 seconds
+        pollInterval = setInterval(() => {
+            fetchStatus();
+            fetchHistory();
+        }, 5000);
+    </script>
+</body>
+</html>
